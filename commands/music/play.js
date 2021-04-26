@@ -1,6 +1,6 @@
 const ytdl = require("ytdl-core");
 const ytsr = require('ytsr');
-const { prefix } = require('../../config.json');
+const prefix = process.env.PREFIX
 const _ = require('lodash');
 const spotify = require('../../config/spotify.js')
 const Song = require('../../models/Song.js');

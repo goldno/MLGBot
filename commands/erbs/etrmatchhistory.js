@@ -2,7 +2,7 @@ const Discord = require('discord.js');
 const {ErBsClient, GameModes} = require('erbs-client')
 const key = process.env.ETRKEY
 const client = new ErBsClient(key, 'v1')
-const { prefix } = require('../../config.json')
+const prefix = process.env.PREFIX
 const erbsInfo = require('../../resources/master.json')
 
 module.exports = {

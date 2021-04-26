@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const { default: fetch } = require('node-fetch');
-const { prefix } = require('../../config.json');
+const prefix = process.env.PREFIX
 const apiKey = process.env.OPENWEATHERKEY
 const geocodeApiKey = process.env.GEOCODEKEY
 

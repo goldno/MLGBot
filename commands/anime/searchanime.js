@@ -3,7 +3,7 @@ const search = malScraper.search
 const type = 'anime'
 
 const Discord = require('discord.js');
-const { prefix } = require('../../config.json')
+const prefix = process.env.PREFIX
 
 module.exports = {
     name: 'searchanime',

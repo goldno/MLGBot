@@ -1,7 +1,7 @@
 const fs = require('fs')
 const fetch = require('node-fetch')
 const { MessageEmbed } = require('discord.js')
-const { prefix } = require('../../config.json');
+const prefix = process.env.PREFIX
 
 module.exports = {
     name: 'trump',
