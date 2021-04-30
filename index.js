@@ -6,6 +6,7 @@ var cron = require("cron")
 const bot_name = process.env.BOT_NAME
 const prefix = process.env.PREFIX
 const client = new Client()
+const amazonStockCheck = require('./config/amazon.js')
 
 const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime', 'erbs']
 modules.forEach(c => {
@@ -27,10 +28,7 @@ client.on('message', async message => {
     const args = message.content.slice(prefix.length).split(/ +/)
     const commandName = args.shift().toLowerCase()
 
-    if(message.channel.id == '786695945014083585') {
-        message.delete({ timeout: 60000 })
-    }
-
+    /* If twitter bot posts a desired GPU restock, mention the GPU role */
     const gpuWords = ['3060', '3060 Ti', '3060 TI', '3060 ti', '3070']
     const roleId = '835313911229186058'
     if(message.channel.id == '833862667453464577' && message.author.id != '778104568222580737' && message.author.id != '778719961106874375') {
@@ -42,6 +40,7 @@ client.on('message', async message => {
         }
     }
 
+    /* Command handling */
     const command = client.commands.get(commandName)
         || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
     if(!command) return
@@ -59,22 +58,21 @@ client.on('message', async message => {
 		// message.reply('There was an error trying to execute that command!');
 	}
 
-    // const args = message.content.slice(prefix.length).split(/ +/);
-    // const command = args.shift().toLowerCase();
+    /* Execute command manually */
+    /* client.commands.get('commandName').execute(message, args); */
 
-    // if(command === 'pog') {
-    //     client.commands.get('pog').execute(message, args);
-    // } else if(command == 'pogging') {
-    //     client.commands.get('pogging').execute(message, args);
-    // }
+    /* Delete messages after specified time in specific channel /*
+    /* if(message.channel.id == 'channel_ID') { message.delete({ timeout: 60000 }) } */
+
 });
 
-// let scheduledMessage = new cron.CronJob('00 00 12 * * *', () => {
-//     let channel = client.channels.cache.get('783744129032257567')
-//     let words = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth']
-//     let date = new Date()
-//     channel.send(`@everyone` + ` Pog!! Its the ${words[date.getDate()-10]} day of Hanukkah!!!!`)
-// }, null, true, 'America/New_York')
-// scheduledMessage.start()
+/* CronJob scheduled Discord message testing */
+/* let scheduledMessage = new cron.CronJob('00 00 12 * * *', () => {
+    let channel = client.channels.cache.get('783744129032257567')
+    let words = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth']
+    let date = new Date()
+    channel.send(`@everyone` + ` Pog!! Its the ${words[date.getDate()-10]} day of Hanukkah!!!!`)
+}, null, true, 'America/New_York')
+scheduledMessage.start() */
 
 client.login(process.env.TOKEN);
