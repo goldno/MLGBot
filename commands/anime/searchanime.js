@@ -53,7 +53,7 @@ module.exports = {
                 embed.addField(`Aired`, `${aired}`, true)
                 embed.addField(`Status`, `${status}`, true)
 
-                message.channel.send(embed)
+                message.channel.send({ embeds: [embed] })
             })
             .catch((err) => console.log(err))
 

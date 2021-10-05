@@ -1,10 +1,11 @@
-const { Client, Collection } = require('discord.js');
+const { Client, Collection, Intents } = require('discord.js');
 
 module.exports = class extends Client {
 	constructor(config) {
 		super({
 			disableEveryone: false,
 			disabledEvents: ['TYPING_START'],
+			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
 		});
 
 		this.commands = new Collection();

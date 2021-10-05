@@ -6,7 +6,6 @@ var cron = require("cron")
 const bot_name = process.env.BOT_NAME
 const prefix = process.env.PREFIX
 const client = new Client()
-const amazonStockCheck = require('./config/amazon.js')
 
 const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime', 'erbs']
 modules.forEach(c => {
@@ -27,18 +26,6 @@ client.on("ready", () => {
 client.on('message', async message => {
     const args = message.content.slice(prefix.length).split(/ +/)
     const commandName = args.shift().toLowerCase()
-
-    /* If twitter bot posts a desired GPU restock, mention the GPU role */
-    const gpuWords = ['3060', '3060 Ti', '3060 TI', '3060 ti', '3070']
-    const roleId = '835313911229186058'
-    if(message.channel.id == '833862667453464577' && message.author.id != '778104568222580737' && message.author.id != '778719961106874375') {
-        for (var i = 0; i < gpuWords.length; i++) {
-            if (message.content.includes(gpuWords[i]) && !message.content.includes('PC')) {
-                message.channel.send(`<@&${roleId}>, theres a ${gpuWords[i]} for sale!!!`)
-                break;
-            }
-        }
-    }
 
     /* Command handling */
     const command = client.commands.get(commandName)

@@ -38,7 +38,7 @@ module.exports = {
                 })
                 helpEmbed.setTitle(capitalize(moduleResult))
                 helpEmbed.setDescription(str)
-                message.channel.send(helpEmbed);
+                message.channel.send({ embeds: [helpEmbed] });
             })
         } else {
             let modulesEmbed = new Discord.MessageEmbed() 
@@ -51,7 +51,7 @@ module.exports = {
 
             })
             modulesEmbed.setDescription(modulesStr)
-            message.channel.send(modulesEmbed)
+            message.channel.send({ embeds: [modulesEmbed] })
         }
 
         // let str = ''
