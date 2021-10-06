@@ -54,12 +54,14 @@ client.on('message', async message => {
 });
 
 /* CronJob scheduled Discord message testing */
-/* let scheduledMessage = new cron.CronJob('00 00 12 * * *', () => {
-    let channel = client.channels.cache.get('783744129032257567')
-    let words = ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth']
-    let date = new Date()
-    channel.send(`@everyone` + ` Pog!! Its the ${words[date.getDate()-10]} day of Hanukkah!!!!`)
-}, null, true, 'America/New_York')
-scheduledMessage.start() */
+    let scheduledMessage = new cron.CronJob('00 06 21 * * *', () => {
+        var user = client.guild.members.cache.random()
+        var userID = user.id
+        var randomUser = `<@${userID}>`
+        let channel = client.channels.cache.get('804904254955061289')
+        let flushedEmoji = '<:flushedBIG:793533537407467581>'
+        channel.send(`${randomUser} Hey you sussy baka ${flushedEmoji}, You're looking quite submissive and breedable tonight.`)
+    }, null, true, 'America/New_York')
+    scheduledMessage.start() 
 
 client.login(process.env.TOKEN);

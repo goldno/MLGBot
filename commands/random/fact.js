@@ -18,14 +18,13 @@ module.exports = {
                 message.channel.send('Failed to retrieve fact :(')
                 return console.log(err)
             }
+            var randomColor = Math.floor(Math.random()*16777215).toString(16);
             const embed = new MessageEmbed()
-                .setColor('#BB7D61')
+                .setColor(randomColor)
                 .setAuthor('Rhib Says')
-                // .attachFiles(['./resources/images/jorts.png'])
-                // .setImage('attachment://jorts.png')
                 .setDescription(body.text)
                 .setFooter('Powered by Useless Facts API')
-            message.channel.send(embed)
+            message.channel.send({ embeds: [embed] })
             return
         })
     }

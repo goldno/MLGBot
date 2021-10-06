@@ -1,5 +1,6 @@
 const fs = require('fs')
 const Discord = require('discord.js');
+const { MessageAttachment } = require('discord.js')
 
 module.exports = {
     name: 'pig',
@@ -11,21 +12,20 @@ module.exports = {
             const pigFiles = files.filter(filename => filename.endsWith('.jpg'));
             const chosenPig = randomElement(pigFiles);
             const attachment = new Discord.MessageAttachment(this.pigPath+chosenPig, chosenPig);
+            var randomColor = Math.floor(Math.random()*16777215).toString(16);
             if(chosenPig === 'p8.jpg') {
                 const embed = new Discord.MessageEmbed()
-                    .setColor('#0099ff')
+                    .setColor(randomColor)
                     .setTitle('PIG POG')
-                    .attachFiles(attachment)
                     .setImage(`attachment://${chosenPig}`)
                     .setFooter('RARE: THICCC BELLA')
-                message.channel.send(embed);
+                message.channel.send({ embeds: [embed], files: [attachment] });
             } else {
                 const embed = new Discord.MessageEmbed()
-                    .setColor('#0099ff')
+                    .setColor(randomColor)
                     .setTitle('PIG POG')
-                    .attachFiles(attachment)
                     .setImage(`attachment://${chosenPig}`)
-                message.channel.send(embed);
+                message.channel.send({ embeds: [embed], files: [attachment] });
             }
         })
     }

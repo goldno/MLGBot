@@ -47,7 +47,7 @@ module.exports = {
 
                             embed.addField(`${dateString}`, `Temp: ${tempHigh}/${tempLow}°F  \xa0\xa0\xa0\xa0  ${description} — ${description2}`, false)
                         }
-                        message.channel.send(embed)
+                        message.channel.send({ embeds: [embed] })
                     }).catch(err => {
                         message.channel.send(`Failed to retrieve weather data from coordinates **Lat:${lat} Lon:${lon}**`)
                         return console.error(err)

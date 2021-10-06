@@ -7,8 +7,9 @@ module.exports = {
     aliases: [],
     async execute(message) {
         let {joke, answer} = await api.joke();
+        var randomColor = Math.floor(Math.random()*16777215).toString(16);
         const embed = new MessageEmbed()
-            .setColor('#BB7D61')
+            .setColor(randomColor)
             .setDescription(`${joke} ${answer}`)
             .setFooter('Powered by 404 Studios API')
         message.channel.send({ embeds: [embed] })

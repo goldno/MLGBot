@@ -61,7 +61,7 @@ module.exports = {
                 embed.addField('Total Wins', `${totalWins}`, true)
                 embed.addField('Most Used Characters', `${mostUsedCharacters}`, true)
 
-                message.channel.send(embed)
+                message.channel.send({ embeds: [embed] })
             }).catch(err => {
                 message.channel.send(`${seasonNum} is an invalid season!`)
                 console.err(err)

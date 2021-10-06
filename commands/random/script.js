@@ -13,7 +13,7 @@ module.exports = {
     description: 'displays a random bible verse!',
     aliases: [],
     async execute(message) {
-        request('https://labs.bible.org/api/?passage=random', options, (err, res, body) => {
+       request('https://labs.bible.org/api/?passage=random', options, (err, res, body) => {
             if(err) {
                 message.channel.send('Failed to retrieve bible verse :(')
                 return console.log(err)
@@ -22,14 +22,13 @@ module.exports = {
             var str2 = '</b>'
             text = body.replace(str1, '')
             text1 = text.replace(str2, ':')
+            var randomColor = Math.floor(Math.random()*16777215).toString(16);
             const embed = new MessageEmbed()
-                .setColor('#BB7D61')
+                .setColor(randomColor)
                 .setAuthor('God Says')
-                // .attachFiles(['./resources/images/jorts.png'])
-                // .setImage('attachment://jorts.png')
                 .setDescription(text1)
                 .setFooter('Powered by Bible Labs API')
-            message.channel.send(embed)
+            message.channel.send({ embeds: [embed] })
             return
         })
     }

@@ -74,7 +74,7 @@ module.exports = {
                             .addField(`Humidity:`, `${humidity}%`, true)
                             .addField(`Wind Speed:`, `${windSpeed}MPH`, true)
                             .setFooter(`Powered by OpenWeatherMap.org`)
-                        message.channel.send(embed)
+                        message.channel.send({ embeds: [embed] })
                     }).catch(err => {
                         message.channel.send(`Failed to retrieve weather data. Please enter a date that is no more than **7 days** in the future. Or enter a valid location in the format: **${prefix}w ['City,State' or Zip Code] [M/D]**`)
                         return console.error(err)

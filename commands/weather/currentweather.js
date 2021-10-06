@@ -48,7 +48,7 @@ module.exports = {
                             .addField(`Wind Speed:`, `${windSpeed}MPH`, true)
                             .setTimestamp(currentDateTime)
                             .setFooter(`Powered by OpenWeatherMap.org`)
-                        message.channel.send(embed)
+                        message.channel.send({ embeds: [embed] })
                             // .then(msg => {
                             //     msg.delete({ timeout: 60000 })
                             //     // message.delete({ timeout: 60000 })
