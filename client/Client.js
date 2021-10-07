@@ -6,7 +6,7 @@ module.exports = class extends Client {
 			fetchAllMembers: true,
 			disableEveryone: false,
 			disabledEvents: ['TYPING_START'],
-			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
+			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_VOICE_STATES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_PRESENCES]
 		});
 
 		this.commands = new Collection();

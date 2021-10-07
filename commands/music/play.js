@@ -1,241 +1,114 @@
-const ytdl = require("ytdl-core");
-const ytsr = require('ytsr');
 const prefix = process.env.PREFIX
-const _ = require('lodash');
-const spotify = require('../../config/spotify.js')
-const Song = require('../../models/Song.js');
-const COOKIE = process.env.COOKIE
-var firstSpotifyPlaylistSong = null
-var tracksLeft = null
+const ytdl = require('ytdl-core');
+const ytSearch = require('yt-search');
+const {
+	AudioPlayerStatus,
+	StreamType,
+	createAudioPlayer,
+	createAudioResource,
+	joinVoiceChannel,
+} = require('@discordjs/voice');
 
 module.exports = {
-    name: "play",
-    description: "plays a youtube search result, youtube link, spotify track link, or spotify playlist link!",
+    name: 'play',
+    description: 'plays a youtube search result!',
     guildOnly: true,
     args: true,
     aliases: [],
     async execute(message) {
-      const query = message.content.slice(prefix.length).split(/ +/);
-      query.shift()
-      // console.log(query)
+        //Checking for the voicechannel and permissions.
+        const voiceChannel = message.member.voice.channel;
+        if (!voiceChannel) return message.channel.send('You need to be in a channel to execute this command!');
+        const permissions = voiceChannel.permissionsFor(message.client.user);
+        if (!permissions.has('CONNECT')) return message.channel.send('You dont have the correct permissins');
+        if (!permissions.has('SPEAK')) return message.channel.send('You dont have the correct permissins');
 
-      const queue = message.client.queue
-      const guildId = message.guild.id
-      const serverQueue = queue.get(guildId)
-      const textChannel = message.channel
-      const voiceChannel = message.member.voice.channel
-      if (!query.length)
-        return message.channel.send(`You didn't provide any arguments, ${message.author}!`)
-      if (!voiceChannel)
-        return message.channel.send("You need to be in a voice channel to play music!")
-      const permissions = voiceChannel.permissionsFor(message.client.user);
-      if (!permissions.has("CONNECT") || !permissions.has("SPEAK")) {
-        return message.channel.send("I need the permissions to join and speak in your voice channel!");
-      }
+        //Get youtube search and download video
+        const args = message.content.slice(prefix.length).split(/ +/);
+        args.shift()
+        if (!args.length)
+            return message.channel.send(`You didn't provide any arguments, ${message.author}!`)    
 
-      if (!serverQueue) {
-        const queueConstruct = {
-          textChannel: textChannel,
-          voiceChannel: voiceChannel,
-          connection: null,
-          songs: [],
-          loop: false,
-          volume: 5,
-          playing: false
-        }
-        queue.set(message.guild.id, queueConstruct)
-        const song = await this.getSongFromQuery(message, query)
-        if(firstSpotifyPlaylistSong !== null) {
-          queueConstruct.songs.push(firstSpotifyPlaylistSong)
-          this.sendAddedSongMessage(message, firstSpotifyPlaylistSong)
-          if (!queueConstruct.playing) this.startPlaying(message, firstSpotifyPlaylistSong)
-          console.log(tracksLeft)
-          this.loadSpotifyPlaylistFinish(queueConstruct, tracksLeft)
-          textChannel.send(`**Finished loading Spotify playlist of ${tracksLeft.length+1} tracks.**`)
-          firstSpotifyPlaylistSong = null
+        let song = {};
+        //If the first argument is a link. Set the song object to have two keys. Title and URl.
+        if (ytdl.validateURL(args[0])) {
+            const song_info = await ytdl.getInfo(args[0]);
+            song = { title: song_info.videoDetails.title, url: song_info.videoDetails.video_url }
         } else {
-          if (!song) 
-            return textChannel.send(`Could not find a resource from:\n${query}`)
-          song.searchQuery = query.join(' ')
-          queueConstruct.songs.push(song)
-          this.sendAddedSongMessage(message, song)
-          if (!queueConstruct.playing) this.startPlaying(message, song)
+            //If there was no link, we use keywords to search for a video. Set the song object to have two keys. Title and URl.
+            const video_finder = async (query) =>{
+                const video_result = await ytSearch(query);
+                return (video_result.videos.length > 1) ? video_result.videos[0] : null;
+            }
+
+            const video = await video_finder(args.join(' '));
+            if (video){
+                song = { title: video.title, url: video.url }
+            } else {
+                 message.channel.send('Error finding video.');
+            }
         }
-      } else {
-        const song = await this.getSongFromQuery(message, query)
-        if(firstSpotifyPlaylistSong !== null) {
-          serverQueue.songs.push(firstSpotifyPlaylistSong)
-          this.sendAddedSongMessage(message, firstSpotifyPlaylistSong)
-          if (!serverQueue.playing) this.startPlaying(message, firstSpotifyPlaylistSong)
-          console.log(tracksLeft)
-          this.loadSpotifyPlaylistFinish(serverQueue, tracksLeft)
-          textChannel.send(`**Finished loading Spotify playlist of ${tracksLeft.length+1} tracks.**`)
-          firstSpotifyPlaylistSong = null
-          tracksLeft = null
-        } else {
-          const song = await this.getSongFromQuery(message, query)
-          if (!song) 
-            return textChannel.send(`Could not find a resource from:\n${query}`)
-          serverQueue.songs.push(song)
-          this.sendAddedSongMessage(message, song)
+
+        //Initialize global queue
+        const queue = message.client.queue
+        const serverQueue = queue.get(message.guild.id);
+        const textChannel = message.channel
+
+        if(!serverQueue) { //If queue is not set up, initialize queue and add first song
+            const player = createAudioPlayer(); //Create audio player object (used in video_player)
+            const queueConstruct = {
+                voiceChannel: voiceChannel,
+                textChannel: textChannel,
+                connection: null,
+                songs: [],
+                loop: false,
+                playing: false,
+                player: player
+            }
+            queue.set(message.guild.id, queueConstruct);
+            queueConstruct.songs.push(song);
+
+            //Establish a connection and play the song with the video_player function.
+            try {
+                const connection = joinVoiceChannel({
+                    channelId: voiceChannel.id,
+                    guildId: message.guild.id,
+                    adapterCreator: message.guild.voiceAdapterCreator,
+                });
+                queueConstruct.connection = connection;
+                video_player(message, message.guild, queueConstruct.songs[0]);
+            } catch (err) {
+                queue.delete(message.guild.id);
+                message.channel.send('There was an error connecting!');
+                throw err;
+            }
+        } else { //If queue is already set up, add new song to queue
+            serverQueue.songs.push(song);
+            return message.channel.send(`👍 **${song.title}** added to queue!`);
         }
-      }
-
-    },  
-
-    async addSong(message, query) {
-      const textChannel = message.channel
-      const voiceChannel = message.member.voice.channel
-      const queue = message.client.queue
-      const song = await this.getSongFromQuery(message, query)
-      if (!song) 
-        return textChannel.send(`Could not find a resource from:\n${query}`)
-      
-      if (!serverQueue.songs) {
-        const queueConstruct = {
-          textChannel: textChannel,
-          voiceChannel: voiceChannel,
-          connection: null,
-          songs: [],
-          loop: false,
-          volume: 5,
-          playing: false
-        }
-        queue.set(message.guild.id, queueConstruct)
-        queueConstruct.songs.push(song)
-        this.sendAddedSongMessage(message, song)
-        if (!queueConstruct.playing) this.startPlaying(message, song)
-      }
-    },
-
-    async startPlaying(message, song) {
-      const voiceChannel = message.member.voice.channel
-      const serverQueue = message.client.queue.get(message.guild.id)
-      serverQueue.playing = song
-      if(!serverQueue.playing) {
-          return this.stop(message)
-      }
-      
-      serverQueue.connection = serverQueue.connection || await voiceChannel.join()
-      serverQueue.connection.play(song.resource())
-          .on('finish', () => {
-              const lastSong = serverQueue.songs.shift()
-              if(serverQueue.loop) serverQueue.songs.push(lastSong)
-              this.startPlaying(message, _.head(serverQueue.songs))
-          }).on('error', console.log)
-      },
-
-    stop(message) {
-      const textChannel = message.channel
-      const serverQueue = message.client.queue.get(message.guild.id)
-      const queue = message.client.queue
-      const guildId = message.guild.id
-      serverQueue.connection.disconnect()
-      queue.delete(guildId)
-      if(message)
-          textChannel.send(`The music queue has ended!`)
-    },
-
-    sendAddedSongMessage(message, song) {
-      const textChannel = message.channel
-      textChannel.send(`Added song **${song.name}** by ${song.artist}.`)
-    },
-
-    async getSongFromQuery(message, query) {
-      // console.log('YTLink: '+this.isYTLink(query))
-      // console.log('Track: '+spotify.isTrack(query))
-      // console.log('Playlist: '+spotify.isPlaylist(query))
-      if(this.isYTLink(query)) {
-          return await this.getYTSong(query)
-      } else if(spotify.isTrack(query)) {
-          return await this.getSpotifySong(query)
-      } else if(spotify.isPlaylist(query)) {
-          return await this.loadSpotifyPlaylistStart(message, query)
-      }
-      q = query.join(" ")
-      return await this.searchYT(q)
-    },
-
-    isYTLink(query) {
-      return /https:\/\/www\.youtube\.com\/watch\?v=\S+/.test(query) 
-      || /https:\/\/youtu\.be\/\S+/.test(query)
-    },
-
-    async getYTSong(query, title=null, artist=null) {
-      const link = _.split(query, /\s+/, 1)[0]
-      const optionsYT = { 
-        quality: 'highestaudio',
-        highWaterMark: 1 << 25,
-        requestOptions: { headers: { cookie: COOKIE }, }, }
-      const info = await ytdl.getInfo(link, optionsYT)
-      const videoDetails = info.videoDetails
-      return new Song(
-          title || videoDetails.title,
-          artist || videoDetails.ownerChannelName,
-          () => ytdl(link, optionsYT),
-          info,
-          videoDetails.video_url,
-          null)
-    },
-
-    async searchYT(args, title=null, artist=null) {
-      // console.log(args)
-      const searchResults = await ytsr(args, { limit: 10 })
-      const video = searchResults.items.filter(i => i.type === 'video')[0]
-      // console.log(video.link)
-      // console.log(video.title)
-      // console.log(video.author.name)
-      return await this.getYTSong(
-        video.link,
-        title || video.title,
-        artist || video.author.name)
-    },
-
-    async getSpotifySong(query) {
-      const track = await spotify.getTrack(spotify.getSpotifyId(query))
-      const title = track.body.name
-      const artistName = track.body.artists[0].name
-      return await this.searchYTForSong(`${title} ' ' ${artistName}`, title, artistName)
-    },
-
-    async loadSpotifyPlaylistStart(message, query) {
-      const queue = message.client.queue
-      const serverQueue = queue.get(message.guild.id)
-      const playlistTracks = await spotify.getPlaylistTracks(spotify.getSpotifyId(query))
-      // console.log(playlistTracks)
-
-      const trackToSong = async (trackData) => {
-          const title = trackData.track.name
-          const artist = trackData.track.artists[0].name
-          let song = await this.searchYT(`${title} ${artist}`, title, artist)
-          return song
-      }
-
-      const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms))
-
-      const firstTitle = playlistTracks[0].track.name
-      const firstArtist = playlistTracks[0].track.artists[0].name
-      let firstSongSearch = await this.searchYT(`${firstTitle} ${firstArtist}`, firstTitle, firstArtist)
-      let firstSong = playlistTracks[0]
-      firstSpotifyPlaylistSong = firstSongSearch
-
-      playlistTracks.shift()
-      tracksLeft = playlistTracks
-
-      return await trackToSong(firstSong)
-    },
-
-    async loadSpotifyPlaylistFinish(queue, playlist) {
-      
-
-      for(let i=0; i<playlist.length; i++) {
-        console.log(`Song ${i}: `+playlist[i].track.name)
-        const title = playlist[i].track.name
-        const artist = playlist[i].track.artists[0].name
-        let song = await this.searchYT(`${title} ${artist}`, title, artist)
-        queue.songs.push(song)
-      }
-
     }
 };
 
+const video_player = async(message, guild, song) => {
+    const queue = message.client.queue
+    const song_queue = queue.get(message.guild.id);
+
+    //If no song is left in the server queue. Leave the voice channel and delete the key and value pair from the global queue.
+    if (!song) {
+        song_queue.voice_channel.leave();
+        queue.delete(message.guild.id);
+        return;
+    }
+
+    const stream = ytdl(song.url, { filter: 'audioonly' });
+    const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
+    const player = song_queue.player
+    player.play(resource);
+    song_queue.connection.subscribe(player)
+    player.on(AudioPlayerStatus.Idle, () => {
+        song_queue.songs.shift();
+        video_player(message.guild, song_queue.songs[0]);
+        connection.destroy();
+    });
+    await song_queue.textChannel.send(`🎶 Now playing **${song.title}**`)
+}
