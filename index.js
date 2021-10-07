@@ -54,7 +54,7 @@ client.on('message', async message => {
 });
 
 /* CronJob scheduled Discord message testing */
-    let scheduledMessage = new cron.CronJob('00 06 21 * * *', () => {
+    let scheduledMessage = new cron.CronJob('00 16 20 * * *', () => {
         var user = client.guild.members.cache.random()
         var userID = user.id
         var randomUser = `<@${userID}>`
