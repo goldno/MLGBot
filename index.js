@@ -33,7 +33,7 @@ client.on("ready", () => {
     scheduledMessageTest.start() */
 });
 
-client.on('message', async message => {
+client.on('messageCreate', async message => {
     const args = message.content.slice(prefix.length).split(/ +/)
     const commandName = args.shift().toLowerCase()
 
@@ -68,7 +68,7 @@ client.on("guildCreate", () => {
 });
 
 /* CronJob scheduled Discord message testing */
-let scheduledMessage = new cron.CronJob('00 06 18 * * *', () => {
+let scheduledMessage = new cron.CronJob('00 09 18 * * *', () => {
     const channelGeneral = client.channels.cache.get('804904254955061289')
     var server = client.guilds.cache.get('734586607285567528')
     var randomUser = server.members.cache.random()
