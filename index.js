@@ -5,7 +5,7 @@ require('dotenv').config()
 var cron = require("cron")
 const bot_name = process.env.BOT_NAME
 const prefix = process.env.PREFIX
-const client = new Client()
+const client = new Client({fetchAllMembers: true})
 
 const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime', 'erbs']
 modules.forEach(c => {

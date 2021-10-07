@@ -3,6 +3,7 @@ const { Client, Collection, Intents } = require('discord.js');
 module.exports = class extends Client {
 	constructor(config) {
 		super({
+			fetchAllMembers: true,
 			disableEveryone: false,
 			disabledEvents: ['TYPING_START'],
 			intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES]
