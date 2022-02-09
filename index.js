@@ -35,6 +35,13 @@ client.on("ready", () => {
 });
 
 client.on('messageCreate', async message => {
+    let icantEmoji = '<:ICANT:927771695450828840>'
+    let wecantEmoji = '<:wecant:939359818043514960>'
+    await message.channel.messages.fetch({ limit: 2 }).then(messages => {
+        let msgs = Array.from(messages.values())
+        if(msgs[0].content == icantEmoji && msgs[1].content == icantEmoji) message.channel.send(`${wecantEmoji}`)
+    })
+
     const args = message.content.slice(prefix.length).split(/ +/)
     const commandName = args.shift().toLowerCase()
 
@@ -61,6 +68,7 @@ client.on('messageCreate', async message => {
 
     /* Delete messages after specified time in specific channel /*
     /* if(message.channel.id == 'channel_ID') { message.delete({ timeout: 60000 }) } */
+
 
 });
 
