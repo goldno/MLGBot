@@ -1,4 +1,4 @@
-const fetch = require('node-fetch')
+const fetch = import('node-fetch')
 const tenorKey = process.env.TENORKEY
 const prefix = process.env.PREFIX
 

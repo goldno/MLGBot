@@ -1,6 +1,6 @@
 const prefix = process.env.PREFIX
 const ytdl = require('ytdl-core');
-const ytSearch = require('yt-search');
+const ytsr = require('ytsr');
 const {
 	AudioPlayerStatus,
 	StreamType,
@@ -37,13 +37,15 @@ module.exports = {
         } else {
             //If there was no link, we use keywords to search for a video. Set the song object to have two keys. Title and URl.
             const video_finder = async (query) =>{
-                const video_result = await ytSearch(query);
-                return (video_result.videos.length > 1) ? video_result.videos[0] : null;
+                const options = { limit: 1 }
+                const video_result = await ytsr(query, options);
+                //console.log(video_result)
+                return (video_result.items.length >= 1) ? video_result.items[0] : null;
             }
 
             const video = await video_finder(args.join(' '));
             if (video){
-                song = { title: video.title, url: video.url }
+                song = { title: video.title, url: video.url, thumbnail: video.bestThumbnail.url, duration: video.duration }
             } else {
                  message.channel.send('Error finding video.');
             }
@@ -91,7 +93,7 @@ module.exports = {
 
 const video_player = async(message, guild, song) => {
     const queue = message.client.queue
-    const song_queue = queue.get(message.guild.id);
+    const song_queue = queue.get(guild.id);
 
     //If no song is left in the server queue. Leave the voice channel and delete the key and value pair from the global queue.
     if (!song) {
@@ -108,7 +110,7 @@ const video_player = async(message, guild, song) => {
     player.on(AudioPlayerStatus.Idle, () => {
         song_queue.songs.shift();
         video_player(message.guild, song_queue.songs[0]);
-        connection.destroy();
+        song_queue.connection.destroy();
     });
     await song_queue.textChannel.send(`🎶 Now playing **${song.title}**`)
 }

@@ -7,7 +7,7 @@ const bot_name = process.env.BOT_NAME
 const prefix = process.env.PREFIX
 const client = new Client()
 
-const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime', 'erbs']
+const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime']
 modules.forEach(c => {
     fs.readdir(`./commands/${c}/`, (err, files) => {
         if(err) throw err
@@ -69,7 +69,7 @@ client.on("guildCreate", () => {
 
 /* CronJob scheduled Discord message testing */
 let scheduledMessage = new cron.CronJob('00 09 18 * * *', () => {
-    const channelGeneral = client.channels.cache.get('804904254955061289')
+    const channelGeneral = client.channels.cache.get('931019066867609690')
     var server = client.guilds.cache.get('734586607285567528')
     var randomUser = server.members.cache.random()
     var userID = randomUser.id

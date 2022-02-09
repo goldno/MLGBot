@@ -10,16 +10,21 @@ module.exports = {
         var args = message.content.slice(prefix.length).split(/ +/);
         args.shift()
         const helpModule = args.join(' ')
+        console.log(helpModule)
 
         const capitalize = (s) => {
             if (typeof s !== 'string') return ''
             return s.charAt(0).toUpperCase() + s.slice(1)
         }
+        const toLower = (s) => {
+            if (typeof s !== 'string') return ''
+            return s.charAt(0).toLowerCase() + s.slice(1)
+        }
 
         const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime', 'erbs']
 
         if(args.length > 0) {
-            if(!modules.includes(helpModule)) return message.channel.send('Incorrect command module name!')
+            if(!modules.includes(toLower(helpModule))) return message.channel.send('Incorrect command module name!')
             let str = ''
             let helpEmbed = new Discord.MessageEmbed()
                 .setColor('#0099ff')

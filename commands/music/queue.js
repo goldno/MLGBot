@@ -10,11 +10,10 @@ module.exports = {
         if (!message.member.voice.channel) return message.channel.send('You have to be in a voice channel to show the queue!');
 
         let currentPage = 0;
-        const embeds = generateQueueEmbed(message);
+        const queueEmbeds = generateQueueEmbed(message);
 
         const queueEmbed = await message.channel.send(
-            `**Curent Page - ${currentPage + 1}/${embeds.length}**`,
-            embeds[currentPage]
+            { embeds: [queueEmbeds[currentPage]] }
         );
         try {
             await queueEmbed.react("⬅️");
@@ -32,14 +31,14 @@ module.exports = {
         collector.on("collect", async (reaction, user) => {
             try {
                 if(reaction.emoji.name === "➡️") {
-                    if(currentPage < embeds.length-1) {
+                    if(currentPage < queueEmbeds.length-1) {
                         currentPage++;
-                        queueEmbed.edit(`**Curent Page - ${currentPage + 1}/${embeds.length}**`, embeds[currentPage]);
+                        queueEmbed.edit(`**Curent Page - ${currentPage + 1}/${queueEmbeds.length}**`, queueEmbeds[currentPage]);
                     }
                 } else if(reaction.emoji.name === "⬅️") {
                     if(currentPage !== 0) {
                         --currentPage;
-                        queueEmbed.edit(`**Curent Page - ${currentPage + 1}/${embeds.length}**`, embeds[currentPage]);
+                        queueEmbed.edit(`**Curent Page - ${currentPage + 1}/${queueEmbeds.length}**`, queueEmbeds[currentPage]);
                     }
                 } else {
                     collector.stop();
@@ -66,12 +65,12 @@ function generateQueueEmbed(message) {
       let j = i;
       k += 10;
   
-      const info = current.map((track) => `${++j} - [${track.name}](${track.link})`).join("\n");
+      const info = current.map((track) => `${++j} - [${track.title}](${track.url})`).join("\n");
   
       const embed = new Discord.MessageEmbed()
         .setTitle("Song Queue\n")
         .setColor("#F8AA2A")
-        .setDescription(`**Current Song - [${songs[0].name}](${songs[0].link})**\n\n${info}`)
+        .setDescription(`**Current Song - [${songs[0].title}](${songs[0].url})**\n\n${info}`)
         .setTimestamp();
       embeds.push(embed);
     }

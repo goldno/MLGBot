@@ -1,5 +1,5 @@
 const Discord = require('discord.js');
-const { default: fetch } = require('node-fetch');
+const { default: fetch } = import('node-fetch');
 const prefix = process.env.PREFIX
 const apiKey = process.env.OPENWEATHERKEY
 const geocodeApiKey = process.env.GEOCODEKEY

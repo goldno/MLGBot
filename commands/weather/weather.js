@@ -1,6 +1,6 @@
 const Discord = require('discord.js');
 const { filter } = require('lodash');
-const { default: fetch } = require('node-fetch');
+const { default: fetch } = import('node-fetch');
 const prefix = process.env.PREFIX
 const weatherApiKey = process.env.OPENWEATHERKEY
 const geocodeApiKey = process.env.GEOCODEKEY
