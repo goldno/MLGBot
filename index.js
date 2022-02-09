@@ -67,6 +67,27 @@ client.on("guildCreate", () => {
     console.log(`${bot_name} is online!`)
 });
 
+/* Warn members for playing league longer than 30 min */
+/* let banPresence = new cron.CronJob('00 09 18 * * *', () => {
+    var server = client.guilds.cache.get('734586607285567528')
+    var today = new Date()
+    var currentTime = today.getMinutes()
+    server.members.forEach(member => {
+        let presenceTime = member.presence.activities[0].timestamps.start.getMinutes()
+        var difference = Math.abs(currentTime-presenceTime)
+        if(member.presence.activities[0].name=='' && difference >= 30) {
+            message.channel.send(`Hey <@${member.id}>. You've been playing Lost Ark for more than 30 minutes. Go touch some grass!`)
+        }
+    })
+
+    message.channel.send(`Current Minutes: ${currentTime} m`)
+    message.channel.send(`Start Minutes: ${presenceTime} m`)
+    message.channel.send(`Difference: ${difference} m`)
+
+
+}, null, true, 'America/New_York')
+banPresence.start() */
+
 /* CronJob scheduled Discord message testing */
 let scheduledMessage = new cron.CronJob('00 09 18 * * *', () => {
     const channelGeneral = client.channels.cache.get('931019066867609690')
