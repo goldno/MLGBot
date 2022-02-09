@@ -21,6 +21,7 @@ modules.forEach(c => {
 
 client.on("ready", () => {
     console.log(`${bot_name} is online!`)
+    client.user.setActivity('Pog')
 
     /* Scheduled Message Test
     let scheduledMessageTest = new cron.CronJob('* * * * * *', () => {

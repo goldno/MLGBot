@@ -21,7 +21,7 @@ module.exports = {
             return s.charAt(0).toLowerCase() + s.slice(1)
         }
 
-        const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime', 'erbs']
+        const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime']
 
         if(args.length > 0) {
             if(!modules.includes(toLower(helpModule))) return message.channel.send('Incorrect command module name!')
