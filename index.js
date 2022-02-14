@@ -4,7 +4,7 @@ const client = new Client();
 
 // Bot Config
 const config = require('./config.json');
-const { clientId, guildId } = require('./config.json');
+const { guildId } = require('./config.json');
 const bot_name = process.env.BOT_NAME;
 const prefix = process.env.PREFIX;
 const token = process.env.TOKEN;
@@ -69,7 +69,7 @@ client.once('ready', async () => {
     await client.guilds.cache.get(guildId).commands.set(slashcommands);
 
     const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
-    rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: slashcommands })
+    rest.put(Routes.applicationGuildCommands(process.env.CLIENTID, guildId), { body: slashcommands })
         .then(() => console.log('Successfully registered application commands.'))
         .catch(console.error);
 
