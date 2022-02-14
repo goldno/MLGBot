@@ -1,22 +1,22 @@
-const malScraper = require('mal-scraper')
-const search = malScraper.search
-const type = 'anime'
+const malScraper = require('mal-scraper');
+const search = malScraper.search;
+// const type = 'anime';
 
 const Discord = require('discord.js');
-const prefix = process.env.PREFIX
+const prefix = process.env.PREFIX;
 
 module.exports = {
     name: 'searchanime',
     description: 'search for an anime series!',
     aliases: ['sa'],
     async execute(message) {
-        var args = message.content.slice(prefix.length).split(/ +/);
-        args.shift()
-        const searchName = args.join(' ')
+        const args = message.content.slice(prefix.length).split(/ +/);
+        args.shift();
+        const searchName = args.join(' ');
 
-        var embed = new Discord.MessageEmbed()
-            .setColor("BLUE")
-            .setFooter(`Powered by MAL API`)
+        const embed = new Discord.MessageEmbed()
+            .setColor('BLUE')
+            .setFooter({ text: 'Powered by MAL API' });
 
         // console.log(search.helpers)
         // search.search(type, {
@@ -28,34 +28,34 @@ module.exports = {
         // .catch(console.error)
         malScraper.getInfoFromName(searchName)
             .then((data) => {
-                var englishTitle = data.title
-                var japaneseTitle = data.japaneseTitle
-                var synopsis = data.synopsis
-                var picture = data.picture
-                var trailer = data.trailer
-                var type = data.type
-                var episodes = data.episodes
-                var aired = data.aired
-                var studios = data.studios
-                var source = data.source
-                var rating = data.rating
-                var status = data.status
-                var genres = data.genres
-                var score = data.score
-                var url = data.url
+                const englishTitle = data.title;
+                const japaneseTitle = data.japaneseTitle;
+                const synopsis = data.synopsis;
+                const picture = data.picture;
+                const trailer = data.trailer;
+                const type = data.type;
+                const episodes = data.episodes;
+                const aired = data.aired;
+                const studios = data.studios;
+                const source = data.source;
+                const rating = data.rating;
+                const status = data.status;
+                const genres = data.genres;
+                const score = data.score;
+                const url = data.url;
 
-                embed.setTitle(`${englishTitle} — ${japaneseTitle}`)
-                embed.setThumbnail(picture)
-                embed.setDescription(synopsis)
-                embed.addField(`Type`, `${type}`, true)
-                embed.addField(`Score`, `${score}`, true)
-                embed.addField(`Episodes`, `${episodes}`, true)
-                embed.addField(`Aired`, `${aired}`, true)
-                embed.addField(`Status`, `${status}`, true)
+                embed.setTitle(`${englishTitle} — ${japaneseTitle}`);
+                embed.setThumbnail(picture);
+                embed.setDescription(synopsis);
+                embed.addField('Type', `${type}`, true);
+                embed.addField('Score', `${score}`, true);
+                embed.addField('Episodes', `${episodes}`, true);
+                embed.addField('Aired', `${aired}`, true);
+                embed.addField('Status', `${status}`, true);
 
-                message.channel.send({ embeds: [embed] })
+                message.channel.send({ embeds: [embed] });
             })
-            .catch((err) => console.log(err))
+            .catch((err) => console.log(err));
 
     }
 };

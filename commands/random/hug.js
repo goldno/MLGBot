@@ -1,6 +1,5 @@
-const Anime_Images = require('anime-images-api')
-const API = new Anime_Images()
-const { MessageEmbed } = require('discord.js')
+const Anime_Images = require('anime-images-api');
+const API = new Anime_Images();
 
 module.exports = {
     name: 'hug',
@@ -8,7 +7,7 @@ module.exports = {
     aliases: [],
     async execute(message) {
         API.sfw.hug().then(response => {
-            message.channel.send(response.image)
-        })
+            message.channel.send(response.image);
+        });
     }
 };

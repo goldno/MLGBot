@@ -1,10 +1,8 @@
-const fs = require('fs')
-
 module.exports = {
     name: 'pog',
-    description: 'this is a pog command!',
+    description: 'pogs in chat!',
     aliases: [],
     async execute(message) {
-        message.channel.send('pog! :O')
+        message.channel.send('pog! :O');
     }
 };
