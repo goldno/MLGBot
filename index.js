@@ -1,60 +1,120 @@
-const Discord =  require('discord.js')
-const fs = require('fs')
-const Client = require('./client/Client')
-require('dotenv').config()
-var cron = require("cron")
-const bot_name = process.env.BOT_NAME
-const prefix = process.env.PREFIX
-const client = new Client()
+// Discord Client
+const Client = require('./client/Client');
+const client = new Client();
 
-const modules = ['general', 'music', 'random', 'soundbites', 'weather', 'anime']
+// Bot Config
+const config = require('./config.json');
+const { clientId, guildId } = require('./config.json');
+const bot_name = process.env.BOT_NAME;
+const prefix = process.env.PREFIX;
+const token = process.env.TOKEN;
+
+// Importing Rest & api-types
+const { REST } = require('@discordjs/rest');
+const { Routes } = require('discord-api-types/v9');
+
+// Other Imports
+require('dotenv').config();
+const cron = require('cron');
+const fs = require('fs');
+
+// Read MessageEvent Commands
+const modules = ['general', 'random', 'soundbites', 'anime'];
 modules.forEach(c => {
     fs.readdir(`./commands/${c}/`, (err, files) => {
-        if(err) throw err
-        console.log(`[Commandlogs] Loaded ${files.length} commands of module ${c}`)
+        if(err) throw err;
+        console.log(`[Commandlogs] Loaded ${files.length} commands of module ${c}`);
         files.forEach(f => {
-            const cmd = require(`./commands/${c}/${f}`)
-            client.commands.set(cmd.name, cmd)
-        })
-    })
-})
-
-client.on("ready", () => {
-    console.log(`${bot_name} is online!`)
-    client.user.setActivity('Pog')
-
-    /* Scheduled Message Test
-    let scheduledMessageTest = new cron.CronJob('* * * * * *', () => {
-        var channelBotCommands = client.channels.cache.get('804910099411632138')
-        var server1 = client.guilds.cache.get('734586607285567528')
-        var randomUser1 = server1.members.cache.random()
-        var userName = randomUser1.displayName
-        channelBotCommands.send(`Random user: ${userName}`)
-    }, null, true, 'America/New_York')
-    scheduledMessageTest.start() */
+            const cmd = require(`./commands/${c}/${f}`);
+            client.commands.set(cmd.name, cmd);
+        });
+    });
 });
 
+// Read Slash Commands
+const modulesSlash = ['general', 'rank'];
+modulesSlash.forEach(c => {
+    fs.readdir(`./slashcommands/${c}/`, (err, files) => {
+        if(err) throw err;
+        console.log(`[Commandlogs] Loaded ${files.length} slash commands of module ${c}`);
+        files.forEach(f => {
+            const cmd = require(`./slashcommands/${c}/${f}`);
+            client.slashcommands.set(cmd.data.name, cmd);
+        });
+    });
+});
+
+// Ready Event
+client.once('ready', async () => {
+    client.user.setPresence({
+		status: 'online',
+		activities: [{
+			name: config.status,
+			type: 'PLAYING',
+		}]
+	});
+
+    // Registering Slash Commands
+    const slashcommands = [];
+    modulesSlash.forEach(c => {
+        fs.readdir(`./slashcommands/${c}/`, (err, files) => {
+            if(err) throw err;
+            files.forEach(f => {
+                const cmd = require(`./slashcommands/${c}/${f}`);
+                slashcommands.push(cmd.data.toJSON());
+            });
+        });
+    });
+
+    await client.guilds.cache.get(guildId).commands.set(slashcommands);
+
+    const rest = new REST({ version: '9' }).setToken(process.env.TOKEN);
+    rest.put(Routes.applicationGuildCommands(clientId, guildId), { body: slashcommands })
+        .then(() => console.log('Successfully registered application commands.'))
+        .catch(console.error);
+
+    console.log(`${process.env.BOT_NAME} is online!`);
+});
+
+// Interaction Event
+client.on('interactionCreate', async (interaction) => {
+    if(!interaction.isCommand()) return;
+
+    const slashcommand = client.slashcommands.get(interaction.commandName);
+    if (!slashcommand) return;
+
+    try {
+		await slashcommand.execute(interaction);
+	} catch (error) {
+		console.error(error);
+		await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+	}
+
+});
+
+// Message Event
 client.on('messageCreate', async message => {
-    let icantEmoji = '<:ICANT:927771695450828840>'
-    let wecantEmoji = '<:wecant:939359818043514960>'
+    /* If 2 ICANT emoji are posted, post WECANT emoji */
+    const icantEmoji = '<:ICANT:927771695450828840>';
+    const wecantEmoji = '<:wecant:939359818043514960>';
     await message.channel.messages.fetch({ limit: 2 }).then(messages => {
-        let msgs = Array.from(messages.values())
-        if(msgs[0].content == icantEmoji && msgs[1].content == icantEmoji) message.channel.send(`${wecantEmoji}`)
-    })
+        const msgs = Array.from(messages.values());
+        if(msgs[0].content == icantEmoji && msgs[1].content == icantEmoji) message.channel.send(`${wecantEmoji}`);
+    });
 
-    const args = message.content.slice(prefix.length).split(/ +/)
-    const commandName = args.shift().toLowerCase()
+    // Command handling
+    const args = message.content.slice(process.env.PREFIX.length).split(/ +/);
+    const commandName = args.shift().toLowerCase();
 
-    /* Command handling */
     const command = client.commands.get(commandName)
-        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName))
-    if(!command) return
+        || client.commands.find(cmd => cmd.aliases && cmd.aliases.includes(commandName));
+    if(!command) return;
 
     if(command.args && !args.length) {
-        return message.channel.send(`You didn't provide any arguments, ${message.author}!`)
+        return message.channel.send(`You didn't provide any arguments, ${message.author}!`);
     }
 
-    if(!message.content.startsWith(prefix) || message.author.bot) return;
+    if(!message.content.startsWith(process.env.PREFIX) || message.author.bot) return;
 
     try {
         command.execute(message);
@@ -62,21 +122,11 @@ client.on('messageCreate', async message => {
 		console.error(error);
 		// message.reply('There was an error trying to execute that command!');
 	}
-
-    /* Execute command manually */
-    /* client.commands.get('commandName').execute(message, args); */
-
-    /* Delete messages after specified time in specific channel /*
-    /* if(message.channel.id == 'channel_ID') { message.delete({ timeout: 60000 }) } */
-
-
 });
 
-client.on("guildCreate", () => {
-    console.log(`${bot_name} is online!`)
-});
 
-/* Warn members for playing league longer than 30 min */
+//  Warn members for playing league longer than 30 min
+//  Only works if members have game activity/presence enabled
 /* let banPresence = new cron.CronJob('00 09 18 * * *', () => {
     var server = client.guilds.cache.get('734586607285567528')
     var today = new Date()
@@ -98,14 +148,14 @@ client.on("guildCreate", () => {
 banPresence.start() */
 
 /* CronJob scheduled Discord message testing */
-let scheduledMessage = new cron.CronJob('00 09 18 * * *', () => {
-    const channelGeneral = client.channels.cache.get('931019066867609690')
-    var server = client.guilds.cache.get('734586607285567528')
-    var randomUser = server.members.cache.random()
-    var userID = randomUser.id
-    let flushedEmoji = '<:flushedBIG:793533537407467581>'
-    channelGeneral.send(`<@${userID}> Hey you sussy baka ${flushedEmoji}, You're looking quite submissive and breedable tonight.`)
-}, null, true, 'America/New_York')
-scheduledMessage.start() 
+const scheduledMessage = new cron.CronJob('00 09 18 * * *', () => {
+    const channelGeneral = client.channels.cache.get('931019066867609690');
+    const server = client.guilds.cache.get('734586607285567528');
+    const randomUser = server.members.cache.random();
+    const userID = randomUser.id;
+    const flushedEmoji = '<:flushedBIG:793533537407467581>';
+    channelGeneral.send(`<@${userID}> Hey you sussy baka ${flushedEmoji}, You're looking quite submissive and breedable tonight.`);
+}, null, true, 'America/New_York');
+scheduledMessage.start();
 
 client.login(process.env.TOKEN);
