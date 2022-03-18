@@ -24,7 +24,7 @@ module.exports = {
             const randomColor = Math.floor(Math.random() * 16777215).toString(16);
             const embed = new MessageEmbed()
                 .setColor(randomColor)
-                .setAuthor({ text: 'God Says' })
+                .setAuthor({ name: 'God Says' })
                 .setDescription(text1)
                 .setFooter({ text: 'Powered by Bible Labs API' });
             message.channel.send({ embeds: [embed] });
