@@ -32,7 +32,7 @@ modules.forEach(c => {
 });
 
 // Read Slash Commands
-const modulesSlash = ['general', 'rank'];
+const modulesSlash = ['general', 'rank', 'random'];
 modulesSlash.forEach(c => {
     fs.readdir(`./slashcommands/${c}/`, (err, files) => {
         if(err) throw err;
@@ -122,6 +122,9 @@ client.on('messageCreate', async message => {
 		console.error(error);
 		// message.reply('There was an error trying to execute that command!');
 	}
+
+    //message.channel.send(message.content);
+    //message.delete();
 });
 
 
@@ -157,5 +160,16 @@ const scheduledMessage = new cron.CronJob('00 09 18 * * *', () => {
     channelGeneral.send(`<@${userID}> Hey you sussy baka ${flushedEmoji}, You're looking quite submissive and breedable tonight.`);
 }, null, true, 'America/New_York');
 scheduledMessage.start();
+
+client.on('channelDelete', channel => {
+    const channelGeneral = client.channels.cache.get('931019066867609690');
+    const channelDeleteId = channel.id;
+    channel.guild.fetchAuditLogs({ 'type': 'CHANNEL_DELETE' })
+        .then(logs => logs.entries.find(entry => entry.target.id == channelDeleteId))
+        .then (entry => {
+            const author = entry.executor;
+            channelGeneral.send(`Channel ${channel.name} deleted by ${author.tag}!!!!`);
+        });
+});
 
 client.login(process.env.TOKEN);
